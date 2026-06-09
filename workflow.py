@@ -549,7 +549,7 @@ def main():
     parser.add_argument(
         "direction",
         nargs="+",
-        help="新产品方向名称（可输入中英文混合，如"卫星反作用飞轮电机 Satellite Reaction Wheel Motor"）",
+        help="新产品方向名称（可输入中英文混合，如 '卫星反作用飞轮电机'）",
     )
     parser.add_argument(
         "--model", default=DEFAULT_MODEL,
