@@ -188,7 +188,7 @@
 {%- set rec_strat = strategy.get('recommended_strategy', '') %}
 
 {%- if insights %}
-<p><strong>核心发现</strong>：{{ insights[0] }}</p>
+<p><strong>核心发现</strong>：{{ insights[0] if insights[0] is string else insights[0].get('insight', insights[0]) }}</p>
 {%- endif %}
 
 {%- if top_opp or rec_strat or top_risk %}
@@ -729,7 +729,7 @@
 <h3>跨模块关联发现</h3>
 <ul>
 {%- for ins in insights %}
-  <li>{{ ins }}</li>
+  <li>{{ ins if ins is string else ins.get('insight', ins) }}</li>
 {%- endfor %}
 </ul>
 {%- endif %}

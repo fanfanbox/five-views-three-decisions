@@ -146,7 +146,7 @@ TREND_SYSTEM = '''你是一个行业技术趋势分析师（"看趋势"）。分
 
 COMPETITOR_SYSTEM = '''你是一个竞争情报分析师（"看对手"）。识别主要竞争对手和技术参数对标。
 基于提供的搜索结果进行分析。输出必须是JSON格式，包含：
-- top_players: [{name, type: "巨头"|"初创"|"跨界", region, funding, key_products: [产品名或型号列表], technical_params: {效率,功率密度,寿命,重量,扭矩,角动量等}, target_market, price_range: "价格区间", annual_production: "年产量（如有）", annual_revenue: "年营收（如有）", key_customers: ["主要客户列表"], technology_roadmap: "该公司的技术路线方向", source_urls}]
+- top_players: [{name, type: "巨头"|"初创"|"跨界", region, funding, key_products: [产品名或型号列表], technical_params: {效率,功率密度,寿命,重量,扭矩等其他关键参数}, target_market, price_range: "价格区间", annual_production: "年产量（如有）", annual_revenue: "年营收（如有）", key_customers: ["主要客户列表"], technology_roadmap: "该公司的技术路线方向", source_urls}]
 - emerging_threats: ["新兴威胁列表"]
 - competitive_landscape_summary: "竞争格局总结"
 - market_share_distribution: [{company, share_pct, rank}]
@@ -161,8 +161,8 @@ CUSTOMER_SYSTEM = '''你是一个客户洞察分析师（"看客户"）。识别
 - pain_points: [{pain, frequency: "高"|"中"|"低", source_type, quotes: []}]
 - value_proposition_match: {what_customers_want: [], top_priority: "..."}
 - procurement_signals: [{signal, source}]
-- customer_segments: [{segment_name: "卫星制造商"|"星座运营商"|"政府/国防"|"科研机构", description, demand_volume, budget_range, procurement_cycle, key_requirements: [], growth_potential: "高"|"中"|"低"}]  — 客户细分及需求规模
-- major_customers: [{name, region, fleet_size_or_scale, requirements, procurement_volume, relationship_status: "现有"|"潜在"}]  — 主要客户/采购方
+- customer_segments: [{segment_name: "根据产品方向填写，如制造商|运营商|政府/国防|科研机构等", description, demand_volume, budget_range, procurement_cycle, key_requirements: [], growth_potential: "高"|"中"|"低"}]  — 客户细分及需求规模
+- major_customers: [{name, region, scale_or_volume, requirements, procurement_volume, relationship_status: "现有"|"潜在"}]  — 主要客户/采购方
 - procurement_patterns: {typical_order_volume, decision_factors: [], certification_requirements: [], lead_time_expectation, payment_terms}  — 采购模式
 - market_split: {china: {customer_profile: "中国客户特征与需求", pain_points: "中国特有痛点", procurement_characteristics: "采购特点"}, global: {customer_profile: "全球客户特征与需求", pain_points: "全球共性痛点", procurement_characteristics: "采购特点"}}  — 中国vs全球客户分拆'''
 
@@ -194,7 +194,7 @@ SYNTHESIS_SYSTEM = '''你是一个战略合成分析师（交叉验证）。整�
 输出必须是JSON格式，包含：
 - deduped_entities: [{entity, appearing_in: ["看趋势"|"看对手"|"看客户"|"看机会"], unified_description}]
 - conflicts: [{description, severity: "高"|"中"|"低", modules: [], resolution: "解释", suggested_action: "建议操作"}]
-- cross_module_insights: ["洞察链列表，每条应包含2-3个模块的关联信息"]
+- cross_module_insights: ["字符串数组，每个元素为纯文本字符串（不要用对象格式），每条需包含2-3个模块的关联信息和关键数据"]
 - prioritized_opportunities: [{opportunity, score: 0-100, rationale}]
 - data_gaps: ["数据缺失列表"]'''
 
@@ -205,7 +205,7 @@ GOAL_SYSTEM = '''你是一个战略目标制定者（"定目标"）。基于交�
 
 STRATEGY_SYSTEM = '''你是一个竞争策略顾问（"定策略"）。评估三种路线并推荐最佳策略。
 输出必须是JSON格式，包含：
-- recommended_strategy: "具体策略名称（如'立方星轻量化飞轮技术领先'或'低轨星座平替降本飞轮'，务必结合具体产品和市场给出有意义的名称，不要太笼统）"
+- recommended_strategy: "具体策略名称（务必结合具体产品和市场给出有意义的名称，不要太笼统，如"低成本快速验证策略"或"高性能技术领先策略"）"
 - rationale: "推荐理由（引用五看数据支撑）"
 - rejected_strategies: [{strategy: "被否策略", reason: "原因"}]
 - differentiation_edges: ["差异化支撑点列表"]'''

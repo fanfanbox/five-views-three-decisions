@@ -81,6 +81,14 @@ def _render_html(context: dict) -> str:
 # Markdown Report (string builder)
 # =========================================================================
 
+def _fmt_insight(ins):
+    """Helper: render insight whether it's a string or {insight, modules} dict."""
+    if isinstance(ins, str):
+        return ins
+    if isinstance(ins, dict):
+        return ins.get("insight", str(ins))
+    return str(ins)
+
 def _generate_md(context: dict) -> str:
     """Generate clean Markdown report from pipeline data."""
     pd_ = context["product_direction"]
@@ -115,7 +123,7 @@ def _generate_md(context: dict) -> str:
     md += "## 一、执行摘要\n\n"
     insights = synthesis.get("cross_module_insights", [])
     if insights:
-        md += f"**核心发现**：{insights[0]}\n\n"
+        md += f"**核心发现**：{_fmt_insight(insights[0])}\n\n"
     md += f"本报告对「{pd_}」进行了五看三定全维度战略分析，基于公开网络信息从技术趋势、竞争格局、客户需求、自身能力、市场机会五个维度出发，经交叉验证后形成目标-策略-计划三层决策建议。\n\n"
 
     # --- Key metrics ---
@@ -510,7 +518,7 @@ def _generate_md(context: dict) -> str:
     if insights:
         md += "### 跨模块关联发现\n\n"
         for ins in insights:
-            md += f"- {ins}\n"
+            md += f"- {_fmt_insight(ins)}\n"
         md += "\n"
 
     prioritized = synthesis.get("prioritized_opportunities", [])
