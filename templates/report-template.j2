@@ -298,14 +298,14 @@
 {%- if roadmap %}
 <h3>技术路线代际对比</h3>
 <table>
-  <tr><th>世代</th><th>时间范围</th><th>关键特征</th><th>预期提升</th><th>成熟度</th></tr>
+  <tr><th>阶段</th><th>时间范围</th><th>关键技术</th><th>成熟度预测</th><th>备注</th></tr>
 {%- for r in roadmap %}
   <tr>
-    <td><strong>{{ r.get('generation', '') }}</strong></td>
-    <td>{{ r.get('timeframe', '') }}</td>
-    <td>{{ r.get('key_features', [])|join('、') }}</td>
-    <td>{{ r.get('expected_improvement', '') }}</td>
-    <td>{{ r.get('maturity', '') }}</td>
+    <td><strong>{{ r.get('phase', '') or r.get('generation', '') }}</strong></td>
+    <td>{{ r.get('timeline_estimate', '') or r.get('timeframe', '') }}</td>
+    <td>{%- set kt = r.get('key_technologies', []) or r.get('key_features', []) %}{{ kt if kt is string else kt|join('、') }}</td>
+    <td>{{ r.get('maturity_forecast', '') or r.get('expected_improvement', '') }}</td>
+    <td>{{ r.get('notes', '') or r.get('maturity', '') }}</td>
   </tr>
 {%- endfor %}
 </table>
@@ -319,9 +319,9 @@
 {%- for d in demand_trends %}
   <tr>
     <td>{{ d.get('year_or_period', '') }}</td>
-    <td>{{ d.get('volume', '') }}{{ d.get('unit', '') }}</td>
+    <td>{{ d.get('volume_numeric', '') or d.get('volume', '') }}{{ d.get('unit', '') }}</td>
     <td>{{ d.get('growth_rate', '') }}</td>
-    <td>{{ d.get('driver', '') }}</td>
+    <td>{{ d.get('key_driver', '') or d.get('driver', '') }}</td>
   </tr>
 {%- endfor %}
 </table>

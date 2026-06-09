@@ -133,8 +133,12 @@ def _generate_md(context: dict) -> str:
     first_opp = opp.get("opportunity_funnel", [])[:1]
     tam_str = ""
     if first_opp:
-        t = first_opp[0].get("tam", {})
-        tam_str = f"{t.get('value', '')}{t.get('unit', '') or ''}"
+        t = first_opp[0]
+        tc = t.get("tam_china", {})
+        tg = t.get("tam_global", {})
+        cn = f"🇨🇳{tc.get('value','')}{tc.get('unit','') or ''}" if tc.get('value') else ""
+        gl = f"🌍{tg.get('value','')}{tg.get('unit','') or ''}" if tg.get('value') else ""
+        tam_str = (cn + " / " + gl).strip(" /")
     md += "| 指标 | 值 |\n|------|----|\n"
     if growth:
         md += f"| 市场增速 | {growth} |\n"
@@ -205,8 +209,9 @@ def _generate_md(context: dict) -> str:
         md += "| 世代 | 时间范围 | 关键特征 | 预期提升 | 成熟度 |\n"
         md += "|------|----------|----------|----------|--------|\n"
         for r in roadmap:
-            features = "、".join(r.get("key_features", []))
-            md += f"| {r.get('generation','')} | {r.get('timeframe','')} | {features} | {r.get('expected_improvement','')} | {r.get('maturity','')} |\n"
+            raw_kt = r.get("key_technologies", []) or r.get("key_features", [])
+            features = raw_kt if isinstance(raw_kt, str) else "、".join(raw_kt)
+            md += f"| {r.get('phase','') or r.get('generation','')} | {r.get('timeline_estimate','') or r.get('timeframe','')} | {features} | {r.get('maturity_forecast','') or r.get('expected_improvement','')} | {r.get('maturity','')} |\n"
         md += "\n"
 
     # --- 需求总量趋势 ---
@@ -216,7 +221,7 @@ def _generate_md(context: dict) -> str:
         md += "| 时期 | 需求量 | 增长率 | 驱动因素 |\n"
         md += "|------|--------|--------|----------|\n"
         for d in demand_trends:
-            md += f"| {d.get('year_or_period','')} | {d.get('volume','')}{d.get('unit','')} | {d.get('growth_rate','')} | {d.get('driver','')} |\n"
+            md += f"| {d.get('year_or_period','')} | {d.get('volume_numeric','') or d.get('volume','')}{d.get('unit','')} | {d.get('growth_rate','')} | {d.get('key_driver','') or d.get('driver','')} |\n"
         md += "\n"
 
     # --- 分地区需求 ---
@@ -225,7 +230,7 @@ def _generate_md(context: dict) -> str:
         md += "**分地区需求分布**：\n\n"
         md += f"| 地区 | 需求量 | 备注 |\n|------|--------|------|\n"
         for r in reg_demand:
-            md += f"| {r.get('region','')} | {r.get('value','')}{r.get('unit','')} | {r.get('note','')} |\n"
+            md += f"| {r.get('region','')} | {r.get('demand_value') or r.get('value','')}{r.get('unit','')} | {r.get('note','')} |\n"
         md += f"\n> 数据年份：{(reg_demand[0] or {}).get('year', '')}\n\n"
 
     # --- 价格分布 ---
