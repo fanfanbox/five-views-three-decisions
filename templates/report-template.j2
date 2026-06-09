@@ -1,0 +1,902 @@
+{# ============================================================ #}
+{# 五看三定战略洞察报告 — Jinja2 HTML Template               #}
+{# ============================================================ #}
+{%- macro badge(text, level='mid') -%}
+<span class="badge {{ level }}">{{ text }}</span>
+{%- endmacro %}
+
+{%- macro callout(title, body, type='info') -%}
+<div class="callout {{ type }}">
+  <div class="title">{{ title }}</div>
+  {{ body }}
+</div>
+{%- endmacro %}
+
+{%- macro metric_card(value, label, class='') -%}
+<div class="metric-card{{ ' ' + class if class else '' }}">
+  <div class="value">{{ value }}</div>
+  <div class="label">{{ label }}</div>
+</div>
+{%- endmacro %}
+
+{%- macro maturity_meter(active) -%}
+{%- set stages = ['导入期','爆发期','成熟期','衰退期'] -%}
+{%- set colors = ['#d1d5db','#9ca3af','#2563eb','#d1d5db'] -%}
+{%- set active_idx = stages.index(active) if active in stages else -1 -%}
+<div class="maturity-meter">
+{%- for s in stages %}
+  <div class="maturity-seg{{ ' active' if loop.index0 == active_idx else '' }}" style="background:{{ colors[loop.index0] if loop.index0 != active_idx else '#2563eb' }}; color:{{ '#fff' if loop.index0 == active_idx else '#475569' }};">{{ s }}</div>
+{%- endfor %}
+</div>
+{%- endmacro %}
+
+{%- macro bar_chart(rows) -%}
+<div class="bar-chart">
+{%- for r in rows %}
+  <div class="bar-row">
+    <div class="bar-label">{{ r.label }}</div>
+    <div class="bar-track">
+      <div class="bar-fill" style="width:{{ r.pct }}%; background:{{ r.color or '#2563eb' }};">{% if r.pct >= 25 %}{{ r.text or (r.pct|string + '%') }}{% endif %}</div>
+    </div>
+    {%- if r.value %}<div class="bar-value">{{ r.value }}</div>{%- endif %}
+  </div>
+{%- endfor %}
+</div>
+{%- endmacro %}
+
+{%- macro competitor_cards(players) -%}
+<div class="comp-grid">
+{%- for p in players %}
+  {%- set type_class = {'巨头': '', '初创': 'startup', '跨界': 'cross'}.get(p.type, '') %}
+  {%- set params = p.get('technical_params', {}) %}
+  {%- set param_str = params.items()|list|map('join', '=')|join('<br>') %}
+  <div class="comp-card">
+    <div class="name">{{ p.name }}{% if p.type %}<span class="tag{{ ' ' + type_class if type_class else '' }}">{{ p.type }}</span>{% endif %}</div>
+    <div class="detail">
+      {%- if p.region %}🌍 {{ p.region }}<br>{% endif %}
+      {%- if p.target_market %}<strong>目标</strong>：{{ p.target_market }}<br>{% endif %}
+      {%- if p.price_range %}<strong>价格</strong>：{{ p.price_range }}<br>{% endif %}
+      {%- if p.annual_production %}<strong>产量</strong>：{{ p.annual_production }}<br>{% endif %}
+      {%- if p.annual_revenue %}<strong>营收</strong>：{{ p.annual_revenue }}<br>{% endif %}
+      {%- if p.key_customers %}<strong>客户</strong>：{{ p.key_customers|join('、') }}<br>{% endif %}
+      {%- if param_str %}<strong>参数</strong>：{{ param_str }}{% endif %}
+    </div>
+  </div>
+{%- endfor %}
+</div>
+{%- endmacro %}
+
+{%- macro timeline(items) -%}
+<div class="timeline">
+{%- for item in items %}
+  <div class="timeline-item">
+    <div class="phase">{{ item.phase }}{% if item.timeline %}<span class="period">{{ item.timeline }}</span>{% endif %}</div>
+    {%- if item.deliverables %}<div class="detail">{{ item.deliverables }}</div>{% endif %}
+  </div>
+{%- endfor %}
+</div>
+{%- endmacro %}
+
+{%- macro ref_list(refs) -%}
+<div class="ref-list">
+{%- for r in refs %}
+  <div class="ref-item">
+    <span class="cite-text">{{ r.title }}</span>
+    {%- if r.domain %}<span class="tag-domain">{{ r.domain }}</span>{% endif %}
+    {%- if r.url %}<a class="source" href="{{ r.url }}" target="_blank">{{ r.url }}</a>{% endif %}
+  </div>
+{%- endfor %}
+</div>
+{%- endmacro %}
+
+{%- macro line_chart(series, width=500, height=180) -%}
+{%- if series and series|length > 1 %}
+{%- set max_val = series|map(attribute='value')|max %}
+{%- set min_val = series|map(attribute='value')|min %}
+{%- set value_range = max_val - min_val if max_val > min_val else 1 %}
+{%- set pl_x = 45 %}{% set pl_y = 20 %}{% set pl_w = width - pl_x - 15 %}{% set pl_h = height - pl_y - 30 %}
+{%- set n = series|length %}
+{%- set ns = namespace(polyline='', polygon='') %}
+{%- for d in series %}
+  {%- set x = pl_x + (loop.index0 * pl_w / (n - 1)) %}
+  {%- set y = pl_y + pl_h - ((d.value - min_val) / value_range * pl_h) %}
+  {%- set pt = x|string ~ ',' ~ y|string %}
+  {%- set ns.polyline = ns.polyline ~ ' ' ~ pt %}
+  {%- set ns.polygon = ns.polygon ~ ' ' ~ pt %}
+{%- endfor %}
+{%- set ns.polygon = ns.polygon ~ ' ' ~ (pl_x + pl_w)|string ~ ',' ~ (pl_y + pl_h)|string ~ ' ' ~ pl_x|string ~ ',' ~ (pl_y + pl_h)|string %}
+<div class="line-chart">
+  <svg viewBox="0 0 {{ width }} {{ height }}" style="width:100%;height:{{ height }}px;">
+    <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.01"/></linearGradient></defs>
+    <line x1="{{ pl_x }}" y1="{{ pl_y }}" x2="{{ pl_x }}" y2="{{ pl_y + pl_h }}" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="{{ pl_x }}" y1="{{ pl_y + pl_h }}" x2="{{ pl_x + pl_w }}" y2="{{ pl_y + pl_h }}" stroke="#cbd5e1" stroke-width="1"/>
+    {%- for i in range(5) %}
+      {%- set gy = pl_y + (pl_h * i / 4) %}
+      <line x1="{{ pl_x }}" y1="{{ gy }}" x2="{{ pl_x + pl_w }}" y2="{{ gy }}" stroke="#f1f5f9" stroke-width="1"/>
+      <text x="{{ pl_x - 8 }}" y="{{ gy + 4 }}" text-anchor="end" fill="#94a3b8" font-size="10">{{ (max_val - (value_range * i / 4))|round|int }}</text>
+    {%- endfor %}
+    <polygon points="{{ ns.polygon }}" fill="url(#lg)"/>
+    <polyline points="{{ ns.polyline }}" fill="none" stroke="#2563eb" stroke-width="2" stroke-linejoin="round"/>
+    {%- for d in series %}
+      {%- set x = pl_x + (loop.index0 * pl_w / (n - 1)) %}
+      {%- set y = pl_y + pl_h - ((d.value - min_val) / value_range * pl_h) %}
+      <circle cx="{{ x }}" cy="{{ y }}" r="4" fill="#fff" stroke="#2563eb" stroke-width="2"/>
+      <text x="{{ x }}" y="{{ pl_y + pl_h + 18 }}" text-anchor="middle" fill="#64748b" font-size="10">{{ d.label }}</text>
+      <text x="{{ x }}" y="{{ y - 10 }}" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="600">{{ d.value }}</text>
+    {%- endfor %}
+  </svg>
+</div>
+{%- endif %}
+{%- endmacro %}
+{# ============================================================ #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>五看三定战略洞察报告：{{ product_direction }}</title>
+<style>
+{%- include 'report-style.css' %}
+</style>
+</head>
+<body>
+<div class="report">
+
+<!-- 页头 -->
+<div class="header">
+  <h1>五看三定战略洞察报告</h1>
+  <div class="meta">{{ product_direction }} · {{ date_str }}</div>
+  <div class="author">✍️ Dr.-ING Jian WANG · 五看三定AI战略分析引擎 v1.0</div>
+</div>
+
+<!-- 目录 -->
+<div class="toc">
+  <a href="#s1">一、摘要</a><span class="toc-sep">|</span>
+  <a href="#s2">二、看趋势</a><span class="toc-sep">|</span>
+  <a href="#s3">三、看对手</a><span class="toc-sep">|</span>
+  <a href="#s4">四、看客户</a><span class="toc-sep">|</span>
+  <a href="#s5">五、看自己</a><span class="toc-sep">|</span>
+  <a href="#s6">六、看机会</a><span class="toc-sep">|</span>
+  <a href="#s7">七、交叉验证</a><span class="toc-sep">|</span>
+  <a href="#s8">八、定目标</a><span class="toc-sep">|</span>
+  <a href="#s9">九、定策略</a><span class="toc-sep">|</span>
+  <a href="#s10">十、定计划</a><span class="toc-sep">|</span>
+  <a href="#s11">十一、附录</a>
+</div>
+
+{# ---- 关键指标卡片 ---- #}
+{%- set gap_count = self_data.get('capability_gap_matrix', [])|length %}
+{%- set t1 = opp.get('market_growth_rate', '') %}
+{%- set first_opp = opp.get('opportunity_funnel', [])[0] if opp.get('opportunity_funnel', []) else {} %}
+{%- set tam_cn_val = (first_opp.get('tam_china', {}).get('value', '')|string ~ (first_opp.get('tam_china', {}).get('unit', '') or '')) if first_opp.get('tam_china', {}).get('value') else '—' %}
+{%- set tam_gl_val = (first_opp.get('tam_global', {}).get('value', '')|string ~ (first_opp.get('tam_global', {}).get('unit', '') or '')) if first_opp.get('tam_global', {}).get('value') else '—' %}
+{%- set ttm = goal.get('business_targets', {}).get('time_to_market', '—') %}
+<div class="metrics">
+  {% if t1 %}<a href="#s3" class="metric-link">{{ metric_card(t1|strip_parens, '市场增速', '') }}<small style="display:block;color:#94a3b8;font-size:10px;line-height:1.2;margin-top:2px;">来源：{{ t1|extract_parens }}</small></a>{% endif %}
+  {% if tam_cn_val != '—' %}<a href="#s6" class="metric-link">{{ metric_card(tam_cn_val, '🇨🇳 中国TAM', '') }}</a>{% endif %}
+  {% if tam_gl_val != '—' %}<a href="#s6" class="metric-link">{{ metric_card(tam_gl_val, '🌍 全球TAM', 'green') }}</a>{% endif %}
+  {% if ttm != '—' %}<a href="#s11" class="metric-link">{{ metric_card(ttm|strip_parens, '上市周期', 'orange') }}</a>{% endif %}
+  {% if gap_count > 0 %}<a href="#gap-matrix" class="metric-link">{{ metric_card(gap_count|string + '项', '关键差距', 'purple') }}</a>{% endif %}
+</div>
+
+{# ============================================================ #}
+<h2 id="s1">一、执行摘要</h2>
+{# ============================================================ #}
+{%- set insights = synthesis.get('cross_module_insights', []) %}
+{%- set top_opp = synthesis.get('prioritized_opportunities', [])[0] if synthesis.get('prioritized_opportunities', []) else {} %}
+{%- set top_risk = plan.get('top_risks', [])[0] if plan.get('top_risks', []) else {} %}
+{%- set rec_strat = strategy.get('recommended_strategy', '') %}
+
+{%- if insights %}
+<p><strong>核心发现</strong>：{{ insights[0] }}</p>
+{%- endif %}
+
+{%- if top_opp or rec_strat or top_risk %}
+<div class="metrics" style="margin-bottom:16px;">
+  {%- if top_opp %}
+    {{ metric_card('🎯 ' + (top_opp.get('opportunity','')|strip_parens|truncate(20)), '首选机会', 'green') }}
+  {%- endif %}
+  {%- if rec_strat %}
+    {{ metric_card(rec_strat|strip_parens|truncate(10), '推荐策略', 'teal') }}
+  {%- endif %}
+  {%- if top_risk %}
+    {{ metric_card('⚠️ ' + (top_risk.get('risk','')|strip_parens|truncate(16)), '首要风险', 'orange') }}
+  {%- endif %}
+</div>
+{%- endif %}
+
+<p>本报告对「{{ product_direction }}」进行了五看三定全维度战略分析，基于公开网络信息从技术趋势、竞争格局、客户需求、自身能力、市场机会五个维度出发，经交叉验证后形成目标-策略-计划三层决策建议。</p>
+
+{%- set refs = references or [] %}
+
+{# ============================================================ #}
+<h2 id="s2">二、看趋势：行业与技术风向标</h2>
+{# ============================================================ #}
+{%- set ms_trend = trend.get('market_split', {}) %}
+{%- if ms_trend.get('china') or ms_trend.get('global') %}
+<h4>市场分拆：中国 vs 全球</h4>
+<div style="display:flex;gap:16px;margin:12px 0;">
+  {%- if ms_trend.get('china') %}
+  <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:12px;border-left:4px solid #16a34a;">
+    <h5 style="margin:0 0 8px;color:#16a34a;">🇨🇳 中国</h5>
+    {% if ms_trend.china.outlook %}<p style="font-size:13px;margin:4px 0;"><strong>概述</strong>：{{ ms_trend.china.outlook }}</p>{% endif %}
+    {% if ms_trend.china.key_demand %}<p style="font-size:13px;margin:4px 0;"><strong>需求</strong>：{{ ms_trend.china.key_demand }}</p>{% endif %}
+    {% if ms_trend.china.policy_drivers %}<p style="font-size:13px;margin:4px 0;"><strong>政策</strong>：{{ ms_trend.china.policy_drivers }}</p>{% endif %}
+  </div>
+  {%- endif %}
+  {%- if ms_trend.get('global') %}
+  <div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;border-left:4px solid #2563eb;">
+    <h5 style="margin:0 0 8px;color:#2563eb;">🌍 全球</h5>
+    {% if ms_trend.global.outlook %}<p style="font-size:13px;margin:4px 0;"><strong>概述</strong>：{{ ms_trend.global.outlook }}</p>{% endif %}
+    {% if ms_trend.global.key_demand %}<p style="font-size:13px;margin:4px 0;"><strong>需求</strong>：{{ ms_trend.global.key_demand }}</p>{% endif %}
+    {% if ms_trend.global.policy_drivers %}<p style="font-size:13px;margin:4px 0;"><strong>政策</strong>：{{ ms_trend.global.policy_drivers }}</p>{% endif %}
+  </div>
+  {%- endif %}
+</div>
+{%- endif %}
+{%- set lifecycle = trend.get('technology_lifecycle', '') %}
+
+{%- if lifecycle %}
+<h3>技术生命周期</h3>
+{{ maturity_meter(lifecycle) }}
+<p>技术处于 <strong>{{ badge(lifecycle, {'导入期':'low','爆发期':'mid','成熟期':'high','衰退期':'low'}.get(lifecycle,'mid')) }}</strong> 阶段。</p>
+{%- endif %}
+
+{%- if trend.get('lifecycle_evidence', []) %}
+<h4>判断依据</h4>
+<ul>
+{%- for e in trend.get('lifecycle_evidence', []) %}
+  <li>{{ e }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+
+{%- if trend.get('key_trends', []) %}
+<h3>关键趋势</h3>
+{%- set trend_colors = ['#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'] %}
+{%- set trend_rows = [] %}
+{%- for t in trend.get('key_trends', []) %}
+  {%- set conf_val = {'高': 90, '中': 70, '低': 40}.get(t.get('confidence',''), 60) %}
+  {%- set _ = trend_rows.append({'label': t.get('trend','')|truncate(18), 'pct': conf_val, 'text': t.get('confidence',''), 'value': '置信度 ' ~ t.get('confidence',''), 'color': trend_colors[loop.index0 % 5]}) %}
+{%- endfor %}
+<div class="flex-trend">
+  <div class="flex-text">
+    <p><strong>核心判断</strong>：技术端呈现以下关键趋势，直接影响产品定义与技术选型方向。</p>
+    <ul>
+    {%- for t in trend.get('key_trends', []) %}
+      <li><strong>{{ t.get('trend','') }}</strong>（{{ t.get('confidence','') }}置信度）</li>
+    {%- endfor %}
+    </ul>
+  </div>
+  <div class="flex-chart">
+    {{ bar_chart(trend_rows) }}
+  </div>
+</div>
+{%- endif %}
+
+{%- if trend.get('policy_landscape', []) %}
+<h3>政策环境一览</h3>
+<table>
+  <tr><th style="width:25%">区域</th><th>政策/法规</th><th>影响</th></tr>
+{%- for p in trend.get('policy_landscape', []) %}
+  <tr><td>{{ p.get('region', '') }}</td><td>{{ p.get('policy', '') }}</td><td>{{ p.get('impact', '') }}</td></tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- if trend.get('standards', []) %}
+<h3>标准体系</h3>
+<table>
+  <tr><th>标准</th><th>状态</th><th>关联度</th></tr>
+{%- for s in trend.get('standards', []) %}
+  <tr><td>{{ s.get('standard', '') }}</td><td>{{ s.get('status', '') }}</td><td>{{ s.get('relevance', '') }}</td></tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set roadmap = trend.get('technology_roadmap', []) %}
+{%- if roadmap %}
+<h3>技术路线代际对比</h3>
+<table>
+  <tr><th>世代</th><th>时间范围</th><th>关键特征</th><th>预期提升</th><th>成熟度</th></tr>
+{%- for r in roadmap %}
+  <tr>
+    <td><strong>{{ r.get('generation', '') }}</strong></td>
+    <td>{{ r.get('timeframe', '') }}</td>
+    <td>{{ r.get('key_features', [])|join('、') }}</td>
+    <td>{{ r.get('expected_improvement', '') }}</td>
+    <td>{{ r.get('maturity', '') }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set demand_trends = trend.get('demand_volume_trends', []) %}
+{%- if demand_trends %}
+<h3>需求总量变化趋势</h3>
+<table>
+  <tr><th>时期</th><th>需求量</th><th>增长率</th><th>驱动因素</th></tr>
+{%- for d in demand_trends %}
+  <tr>
+    <td>{{ d.get('year_or_period', '') }}</td>
+    <td>{{ d.get('volume', '') }}{{ d.get('unit', '') }}</td>
+    <td>{{ d.get('growth_rate', '') }}</td>
+    <td>{{ d.get('driver', '') }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{# 折线图：基于 volume_numeric 绘制 #}
+{%- set line_data = [] %}
+{%- for d in demand_trends if d.get('volume_numeric') %}
+  {%- set _ = line_data.append({'label': d.get('year_or_period', ''), 'value': d.get('volume_numeric')}) %}
+{%- endfor %}
+{%- if line_data|length > 1 %}
+{{ line_chart(line_data) }}
+{%- endif %}
+{%- endif %}
+
+{%- set reg_demand = trend.get('regional_demand', []) %}
+{%- if reg_demand %}
+<h4>分地区需求分布</h4>
+<div class="region-demand">
+<table>
+  <tr><th>地区</th><th>需求量（{{ (reg_demand[0] or {}).get('unit', '') }}）</th><th>占比</th><th>备注</th></tr>
+  {%- set total_reg = reg_demand|map(attribute='value')|sum %}
+  {%- for r in reg_demand %}
+  <tr>
+    <td><strong>{{ r.get('region', '') }}</strong></td>
+    <td>{{ r.get('value', '') }}{{ r.get('unit', '') }}</td>
+    <td>{{ (r.get('value', 0) / total_reg * 100)|round|int if total_reg > 0 else '—' }}%</td>
+    <td>{{ r.get('note', '') }}</td>
+  </tr>
+  {%- endfor %}
+  <tr style="font-weight:700;background:#f1f5f9;"><td>合计</td><td>{{ total_reg }}{{ (reg_demand[0] or {}).get('unit', '') }}</td><td>100%</td><td>数据年份：{{ (reg_demand[0] or {}).get('year', '') }}</td></tr>
+</table>
+</div>
+{%- endif %}
+
+{%- set pt = trend.get('price_trends', {}) %}
+{%- if pt %}
+<h3>价格分布与变化</h3>
+<table>
+  <tr><th>档次</th><th>价格</th></tr>
+  <tr><td>入门级</td><td>{{ pt.get('entry_level_price', '—') }}</td></tr>
+  <tr><td>中端</td><td>{{ pt.get('mid_range_price', '—') }}</td></tr>
+  <tr><td>高端</td><td>{{ pt.get('high_end_price', '—') }}</td></tr>
+  <tr><td>单位</td><td>{{ pt.get('unit', '—') }}</td></tr>
+  <tr><td>同比变化</td><td>{{ pt.get('year_over_year_change', '—') }}{% if pt.get('year_over_year_change') and '%' not in pt.get('year_over_year_change') %}%{% endif %}</td></tr>
+</table>
+{%- if pt.get('trend_description') %}<p><em>{{ pt.get('trend_description') }}</em></p>{% endif %}
+{%- endif %}
+
+{# ============================================================ #}
+{%- set has_comp_content = comp.get('top_players') or comp.get('competitive_landscape_summary') or comp.get('market_split', {}).get('china') or comp.get('market_split', {}).get('global') or comp.get('pricing_overview') or comp.get('market_share_distribution') or comp.get('emerging_threats') -%}
+{%- if has_comp_content %}
+<h2 id="s3">三、看对手：竞争格局全景图</h2>
+{# ============================================================ #}
+{%- set ms_comp = comp.get('market_split', {}) %}
+{%- if ms_comp.get('china') or ms_comp.get('global') %}
+<h4>市场分拆：中国 vs 全球</h4>
+<div style="display:flex;gap:16px;margin:12px 0;">
+  {%- if ms_comp.get('china') %}
+  <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:12px;border-left:4px solid #16a34a;">
+    <h5 style="margin:0 0 8px;color:#16a34a;">🇨🇳 中国</h5>
+    {% if ms_comp.china.landscape_summary %}<p style="font-size:13px;margin:4px 0;"><strong>竞争格局</strong>：{{ ms_comp.china.landscape_summary }}</p>{% endif %}
+    {% if ms_comp.china.key_players %}<p style="font-size:13px;margin:4px 0;"><strong>主要玩家</strong>：{{ ms_comp.china.key_players }}</p>{% endif %}
+    {% if ms_comp.china.localization_trend %}<p style="font-size:13px;margin:4px 0;"><strong>国产化</strong>：{{ ms_comp.china.localization_trend }}</p>{% endif %}
+  </div>
+  {%- endif %}
+  {%- if ms_comp.get('global') %}
+  <div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;border-left:4px solid #2563eb;">
+    <h5 style="margin:0 0 8px;color:#2563eb;">🌍 全球</h5>
+    {% if ms_comp.global.landscape_summary %}<p style="font-size:13px;margin:4px 0;"><strong>竞争格局</strong>：{{ ms_comp.global.landscape_summary }}</p>{% endif %}
+    {% if ms_comp.global.key_players %}<p style="font-size:13px;margin:4px 0;"><strong>主要玩家</strong>：{{ ms_comp.global.key_players }}</p>{% endif %}
+    {% if ms_comp.global.entry_barriers %}<p style="font-size:13px;margin:4px 0;"><strong>进入壁垒</strong>：{{ ms_comp.global.entry_barriers }}</p>{% endif %}
+  </div>
+  {%- endif %}
+</div>
+{%- endif %}
+{%- set players = comp.get('top_players', []) %}
+
+{%- if comp.get('competitive_landscape_summary') %}
+{{ callout('竞争格局总结', '<p>' ~ comp.get('competitive_landscape_summary') ~ '</p>', 'info') }}
+{%- endif %}
+
+{%- if players %}
+<h3>主要竞争对手</h3>
+{{ competitor_cards(players) }}
+{%- endif %}
+
+{%- if players %}
+<h3>竞品参数对标</h3>
+<table>
+  <tr><th>公司</th><th>类型</th><th>地区</th><th>目标市场</th><th>关键参数</th><th>价格区间</th><th>年产量</th><th>年营收</th></tr>
+{%- for p in players %}
+  {%- set params = p.get('technical_params', {}) %}
+  {%- set param_str = params.items()|list|map('join', '=')|list|join('; ') %}
+  <tr>
+    <td><strong>{{ p.get('name','') }}</strong></td>
+    <td>{{ p.get('type','') }}</td>
+    <td>{{ p.get('region','') }}</td>
+    <td>{{ p.get('target_market','—') }}</td>
+    <td>{{ param_str or '—' }}</td>
+    <td>{{ p.get('price_range', '—') }}</td>
+    <td>{{ p.get('annual_production', '—') }}</td>
+    <td>{{ p.get('annual_revenue', '—') }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set ms = comp.get('market_share_distribution', []) %}
+{%- if ms %}
+<h3>市场份额分布</h3>
+{%- set ms_rows = [] %}
+{%- for m in ms %}
+  {%- set _ = ms_rows.append({'label': m.get('company',''), 'pct': m.get('share_pct', 0), 'text': m.get('share_pct', 0)|string + '%', 'value': '第' ~ (m.get('rank','')|string) ~ '名' if m.get('rank') else '', 'color': '#2563eb'}) %}
+{%- endfor %}
+{{ bar_chart(ms_rows) }}
+{%- endif %}
+
+{%- set po = comp.get('pricing_overview', {}) %}
+{%- if po %}
+<h3>竞品价格总览</h3>
+<table>
+  <tr><th>档次</th><th>价格</th><th>趋势</th></tr>
+  <tr><td>入门级</td><td>{{ po.get('entry_level', '—') }}</td><td rowspan="3">{{ po.get('trend', '—') }}</td></tr>
+  <tr><td>中端</td><td>{{ po.get('mid_range', '—') }}</td></tr>
+  <tr><td>高端</td><td>{{ po.get('high_end', '—') }}</td></tr>
+</table>
+{%- endif %}
+
+{%- set threats = comp.get('emerging_threats', []) %}
+{%- if threats %}
+{{ callout('新兴威胁', '<ul>' ~ threats|map('xml_wrap', 'li')|join('') ~ '</ul>', 'warning') }}
+{%- endif %}
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s4">四、看客户：真实需求与痛点</h2>
+{# ============================================================ #}
+{%- set ms_cust = cust.get('market_split', {}) %}
+{%- if ms_cust.get('china') or ms_cust.get('global') %}
+<h4>市场分拆：中国 vs 全球</h4>
+<div style="display:flex;gap:16px;margin:12px 0;">
+  {%- if ms_cust.get('china') %}
+  <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:12px;border-left:4px solid #16a34a;">
+    <h5 style="margin:0 0 8px;color:#16a34a;">🇨🇳 中国</h5>
+    {% if ms_cust.china.customer_profile %}<p style="font-size:13px;margin:4px 0;"><strong>客户特征</strong>：{{ ms_cust.china.customer_profile }}</p>{% endif %}
+    {% if ms_cust.china.pain_points %}<p style="font-size:13px;margin:4px 0;"><strong>痛点</strong>：{{ ms_cust.china.pain_points }}</p>{% endif %}
+    {% if ms_cust.china.procurement_characteristics %}<p style="font-size:13px;margin:4px 0;"><strong>采购特点</strong>：{{ ms_cust.china.procurement_characteristics }}</p>{% endif %}
+  </div>
+  {%- endif %}
+  {%- if ms_cust.get('global') %}
+  <div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;border-left:4px solid #2563eb;">
+    <h5 style="margin:0 0 8px;color:#2563eb;">🌍 全球</h5>
+    {% if ms_cust.global.customer_profile %}<p style="font-size:13px;margin:4px 0;"><strong>客户特征</strong>：{{ ms_cust.global.customer_profile }}</p>{% endif %}
+    {% if ms_cust.global.pain_points %}<p style="font-size:13px;margin:4px 0;"><strong>痛点</strong>：{{ ms_cust.global.pain_points }}</p>{% endif %}
+    {% if ms_cust.global.procurement_characteristics %}<p style="font-size:13px;margin:4px 0;"><strong>采购特点</strong>：{{ ms_cust.global.procurement_characteristics }}</p>{% endif %}
+  </div>
+  {%- endif %}
+</div>
+{%- endif %}
+{%- set top_priority = cust.get('value_proposition_match', {}).get('top_priority', '') %}
+{%- if top_priority %}
+{{ callout('客户最关注', '<strong>' ~ top_priority ~ '</strong>', 'info') }}
+{%- endif %}
+
+{%- set pain_points = cust.get('pain_points', []) %}
+{%- if pain_points %}
+<h3>痛点热力图</h3>
+{%- set pain_rows = [] %}
+{%- for p in pain_points %}
+  {%- set freq_pct = {'高': 90, '中': 60, '低': 30}.get(p.get('frequency',''), 50) %}
+  {%- set freq_color = {'高': '#dc2626', '中': '#f59e0b', '低': '#10b981'}.get(p.get('frequency',''), '#3b82f6') %}
+  {%- set _ = pain_rows.append({'label': p.get('pain','')|truncate(40), 'pct': freq_pct, 'text': '频次: ' ~ p.get('frequency',''), 'value': '', 'color': freq_color}) %}
+{%- endfor %}
+<div class="flex-pain">
+  <div class="flex-text">
+    <p><strong>客户核心痛点汇总</strong>：以下痛点在目标市场中被客户高频提及，直接影响采购决策和产品定义。</p>
+    <ul>
+    {%- for p in pain_points %}
+      <li><strong>{{ p.get('pain','') }}</strong> — 提及频次偏{{ p.get('frequency','') }}{% if p.get('quotes', []) %}，如"{{ p.get('quotes', [])|first }}"{% endif %}</li>
+    {%- endfor %}
+    </ul>
+  </div>
+  <div class="flex-chart">
+    {{ bar_chart(pain_rows) }}
+  </div>
+</div>
+{%- endif %}
+
+{%- if cust.get('what_customers_want', []) %}
+<h4>客户价值诉求</h4>
+<ul>
+{%- for w in cust.get('what_customers_want', []) %}
+  <li>{{ w }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+
+{%- set segs = cust.get('customer_segments', []) %}
+{%- if segs %}
+<h3>客户细分及需求规模</h3>
+<table>
+  <tr><th>客户细分</th><th>描述</th><th>需求规模</th><th>预算范围</th><th>采购周期</th><th>核心要求</th><th>增长潜力</th></tr>
+{%- for s in segs %}
+  <tr>
+    <td><strong>{{ s.get('segment_name', '') }}</strong></td>
+    <td>{{ s.get('description', '') }}</td>
+    <td>{{ s.get('demand_volume', '—') }}</td>
+    <td>{{ s.get('budget_range', '—') }}</td>
+    <td>{{ s.get('procurement_cycle', '—') }}</td>
+    <td>{{ s.get('key_requirements', [])|join('、') }}</td>
+    <td>{{ s.get('growth_potential', '—') }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set major_custs = cust.get('major_customers', []) %}
+{%- if major_custs %}
+<h3>主要客户/采购方</h3>
+<table>
+  <tr><th>客户</th><th>地区</th><th>规模</th><th>核心要求</th><th>采购量</th><th>关系状态</th></tr>
+{%- for c in major_custs %}
+  <tr>
+    <td><strong>{{ c.get('name', '') }}</strong></td>
+    <td>{{ c.get('region', '') }}</td>
+    <td>{{ c.get('fleet_size_or_scale', '—') }}</td>
+    <td>{{ c.get('requirements', '') }}</td>
+    <td>{{ c.get('procurement_volume', '—') }}</td>
+    <td>{{ c.get('relationship_status', '—') }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set pp = cust.get('procurement_patterns', {}) %}
+{%- if pp %}
+<h3>采购模式</h3>
+<table>
+  <tr><td style="width:30%"><strong>典型订单量</strong></td><td>{{ pp.get('typical_order_volume', '—') }}</td></tr>
+  <tr><td><strong>决策因素</strong></td><td>{{ pp.get('decision_factors', [])|join(' → ') }}</td></tr>
+  <tr><td><strong>认证要求</strong></td><td>{{ pp.get('certification_requirements', [])|join('、') }}</td></tr>
+  <tr><td><strong>交付周期期望</strong></td><td>{{ pp.get('lead_time_expectation', '—') }}</td></tr>
+</table>
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s5">五、看自己：能力与差距</h2>
+{# ============================================================ #}
+{%- set sc = self_data.get('self_capabilities', {}) %}
+{%- if sc.get('provided_by_user') %}
+<p><strong>自身能力描述</strong>：{{ sc.get('description', '') }}</p>
+{%- else %}
+{{ callout('⚠️ 自身能力未提供', '<p>以下为基于竞品和客户需求的标准差距模板，请补充我司能力后进行精准分析。</p>', 'warning') }}
+{%- endif %}
+
+{%- set gap_matrix = self_data.get('capability_gap_matrix', []) %}
+{%- if gap_matrix %}
+<h3 id="gap-matrix">能力差距矩阵</h3>
+<table>
+  <tr><th>维度</th><th>竞品标杆</th><th>客户需求</th><th>我司能力</th><th>差距</th><th>关键程度</th></tr>
+{%- for g in gap_matrix %}
+  <tr>
+    <td>{{ g.get('dimension', '') }}</td>
+    <td>{{ g.get('competitor_benchmark', '') }}</td>
+    <td>{{ g.get('customer_requirement', '') }}</td>
+    <td>{{ g.get('our_capability', '') }}</td>
+    <td>{{ g.get('gap', '') }}</td>
+    <td>{{ badge(g.get('criticality',''), {'高':'high','中':'mid','低':'low'}.get(g.get('criticality',''),'mid')) }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set assets = self_data.get('strategic_assets', []) %}
+{%- set bottlenecks = self_data.get('resource_bottlenecks', []) %}
+{%- if assets %}
+<p><strong>战略资产</strong>：{{ assets|join('、') }}</p>
+{%- endif %}
+{%- if bottlenecks %}
+{{ callout('资源瓶颈', '<p>' ~ bottlenecks|join('、') ~ '</p>', 'warning') }}
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s6">六、看机会：战略机会点</h2>
+{# ============================================================ #}
+{%- set ms_opp = opp.get('market_split', {}) %}
+{%- if ms_opp.get('china') or ms_opp.get('global') %}
+<h4>市场分拆：中国 vs 全球</h4>
+<div style="display:flex;gap:16px;margin:12px 0;">
+  {%- if ms_opp.get('china') %}
+  <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:12px;border-left:4px solid #16a34a;">
+    <h5 style="margin:0 0 8px;color:#16a34a;">🇨🇳 中国</h5>
+    {% if ms_opp.china.tam_summary %}<p style="font-size:13px;margin:4px 0;"><strong>TAM</strong>：{{ ms_opp.china.tam_summary }}</p>{% endif %}
+    {% if ms_opp.china.growth_rate %}<p style="font-size:13px;margin:4px 0;"><strong>增长</strong>：{{ ms_opp.china.growth_rate }}</p>{% endif %}
+    {% if ms_opp.china.key_opportunities %}<p style="font-size:13px;margin:4px 0;"><strong>机会</strong>：{{ ms_opp.china.key_opportunities|join('；') }}</p>{% endif %}
+    {% if ms_opp.china.risks %}<p style="font-size:13px;margin:4px 0;"><strong>风险</strong>：{{ ms_opp.china.risks }}</p>{% endif %}
+  </div>
+  {%- endif %}
+  {%- if ms_opp.get('global') %}
+  <div style="flex:1;background:#eff6ff;border-radius:8px;padding:12px;border-left:4px solid #2563eb;">
+    <h5 style="margin:0 0 8px;color:#2563eb;">🌍 全球</h5>
+    {% if ms_opp.global.tam_summary %}<p style="font-size:13px;margin:4px 0;"><strong>TAM</strong>：{{ ms_opp.global.tam_summary }}</p>{% endif %}
+    {% if ms_opp.global.growth_rate %}<p style="font-size:13px;margin:4px 0;"><strong>增长</strong>：{{ ms_opp.global.growth_rate }}</p>{% endif %}
+    {% if ms_opp.global.key_opportunities %}<p style="font-size:13px;margin:4px 0;"><strong>机会</strong>：{{ ms_opp.global.key_opportunities|join('；') }}</p>{% endif %}
+    {% if ms_opp.global.risks %}<p style="font-size:13px;margin:4px 0;"><strong>风险</strong>：{{ ms_opp.global.risks }}</p>{% endif %}
+  </div>
+  {%- endif %}
+</div>
+{%- endif %}
+{%- set verdict = opp.get('summary_verdict', '') %}
+{%- set growth = opp.get('market_growth_rate', '') %}
+<div class="metrics" style="margin-bottom:16px;">
+  {{ metric_card(verdict|truncate(16), '市场判断', 'teal') if verdict }}
+  {{ metric_card(growth, '市场增速', 'green') if growth }}
+</div>
+
+{%- set funnel = opp.get('opportunity_funnel', []) %}
+{%- if funnel %}
+<h3>机会漏斗</h3>
+<table>
+  <tr><th>机会点</th><th>Ansoff定位</th><th>🇨🇳 中国TAM</th><th>🌍 全球TAM</th><th>SAM</th><th>SOM</th><th>吸引力</th><th>胜率</th></tr>
+{%- for o in funnel|selectattr('priority_rank')|list|sort(attribute='priority_rank') %}
+  <tr>
+    <td><strong>{{ o.get('opportunity', '') }}</strong></td>
+    <td>{{ o.get('ansoff_quadrant', '—') }}</td>
+    <td>{{ o.get('tam_china', {}).get('value', '') ~ (o.get('tam_china', {}).get('unit', '') or '') }}{% if o.get('tam_china', {}).get('year', '') %}<br><small style="color:#94a3b8">（{{ o.get('tam_china', {}).get('year', '') }}）</small>{% endif %}</td>
+    <td>{{ o.get('tam_global', {}).get('value', '') ~ (o.get('tam_global', {}).get('unit', '') or '') }}{% if o.get('tam_global', {}).get('year', '') %}<br><small style="color:#94a3b8">（{{ o.get('tam_global', {}).get('year', '') }}）</small>{% endif %}</td>
+    <td>{{ o.get('sam', {}).get('value', '') ~ (o.get('sam', {}).get('unit', '') or '') }}{% if o.get('sam', {}).get('year', '') %}<br><small style="color:#94a3b8">（{{ o.get('sam', {}).get('year', '') }}）</small>{% endif %}</td>
+    <td>{{ o.get('som', {}).get('value', '') ~ (o.get('som', {}).get('unit', '') or '') }}{% if o.get('som', {}).get('year', '') %}<br><small style="color:#94a3b8">（{{ o.get('som', {}).get('year', '') }}）</small>{% endif %}</td>
+    <td>{{ badge(o.get('attractiveness',''), {'高':'high','中高':'mid','中':'mid','低':'low'}.get(o.get('attractiveness',''),'mid')) }}</td>
+    <td>{{ badge(o.get('win_probability',''), {'高':'high','中高':'mid','中':'mid','中低':'low','低':'low'}.get(o.get('win_probability',''),'mid')) }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set forecast = opp.get('demand_forecast', []) %}
+{%- if forecast %}
+<h3>需求总量预测</h3>
+<table>
+  <tr><th>年份</th><th>市场需求</th><th>增长</th><th>驱动因素</th></tr>
+{%- for f in forecast %}
+  <tr>
+    <td>{{ f.get('year', '') }}</td>
+    <td>{{ f.get('total_demand_value', '') }}{{ f.get('total_demand_unit', '') }}{% if f.get('volume_if_available') %}（{{ f.get('volume_if_available') }}{{ f.get('unit_if_available', '') }}）{% endif %}</td>
+    <td>{{ f.get('growth_rate', '') }}</td>
+    <td>{{ f.get('key_driver', '') }}</td>
+  </tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set segs = opp.get('market_segmentation', []) %}
+{%- if segs %}
+<h3>市场细分结构</h3>
+{%- for sg in segs %}
+  <h4>{{ sg.get('segment', '') }}</h4>
+  <table>
+    <tr><th>子市场</th><th>TAM</th><th>增长率</th><th>占比</th></tr>
+  {%- for sub in sg.get('sub_segments', []) %}
+    <tr>
+      <td>{{ sub.get('name', '') }}</td>
+      <td>{{ sub.get('tam', '') }}{{ sub.get('tam_unit', '') }}</td>
+      <td>{{ sub.get('growth_rate', '—') }}</td>
+      <td>{{ sub.get('share_pct', '—') }}</td>
+    </tr>
+  {%- endfor %}
+  </table>
+{%- endfor %}
+{%- endif %}
+
+{%- set pa = opp.get('price_analysis', {}) %}
+{%- if pa %}
+<h3>价格分析</h3>
+<table>
+  <tr><th>档次</th><th>价格</th><th>典型应用</th></tr>
+  <tr><td><strong>入门级</strong></td><td>{{ pa.get('entry_level', {}).get('price', '—') }}{{ pa.get('entry_level', {}).get('unit', '') }}</td><td>{{ pa.get('entry_level', {}).get('typical_application', '—') }}</td></tr>
+  <tr><td><strong>中端</strong></td><td>{{ pa.get('mid_range', {}).get('price', '—') }}{{ pa.get('mid_range', {}).get('unit', '') }}</td><td>{{ pa.get('mid_range', {}).get('typical_application', '—') }}</td></tr>
+  <tr><td><strong>高端</strong></td><td>{{ pa.get('high_end', {}).get('price', '—') }}{{ pa.get('high_end', {}).get('unit', '') }}</td><td>{{ pa.get('high_end', {}).get('typical_application', '—') }}</td></tr>
+  <tr><td colspan="3"><em>趋势：{{ pa.get('price_trend', '—') }}</em></td></tr>
+</table>
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s7">七、交叉验证洞察</h2>
+{# ============================================================ #}
+{%- set conflicts = synthesis.get('conflicts', []) %}
+{%- if conflicts %}
+<h3>矛盾与风险</h3>
+{%- for c in conflicts %}
+  {%- set sev_class = {'高':'danger','中':'warning','低':'info'}.get(c.get('severity',''), 'info') %}
+  {{ callout(c.get('description',''), '<p>' ~ (c.get('resolution','') or '') ~ '</p>', sev_class) }}
+{%- endfor %}
+{%- endif %}
+
+{%- if insights %}
+<h3>跨模块关联发现</h3>
+<ul>
+{%- for ins in insights %}
+  <li>{{ ins }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+
+{%- set prioritized = synthesis.get('prioritized_opportunities', []) %}
+{%- if prioritized %}
+<h3>机会优先级排序</h3>
+<table>
+  <tr><th>机会</th><th>评分</th><th>依据</th></tr>
+{%- for o in prioritized %}
+  <tr><td><strong>{{ o.get('opportunity', '') }}</strong></td><td>{{ badge(o.get('score',''), 'high') }}</td><td>{{ o.get('rationale', '') }}</td></tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s8">八、定目标：产品与商业红线</h2>
+{# ============================================================ #}
+{%- set indicators = goal.get('technical_mvp', {}).get('indicators', []) %}
+{%- if indicators %}
+<h3>技术红线（MVP关键指标）</h3>
+{%- set ind_rows = [] %}
+{%- for ind in indicators %}
+  {%- set _ = ind_rows.append({'label': ind.get('param',''), 'pct': 85, 'text': ind.get('target',''), 'value': ind.get('basis',''), 'color': '#2563eb'}) %}
+{%- endfor %}
+{{ bar_chart(ind_rows) }}
+
+<h4>指标详情</h4>
+<table>
+  <tr><th>参数</th><th>目标值</th><th>依据</th></tr>
+{%- for ind in indicators %}
+  <tr><td><strong>{{ ind.get('param', '') }}</strong></td><td>{{ ind.get('target', '') }}</td><td>{{ ind.get('basis', '') }}</td></tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{%- set certs = goal.get('technical_mvp', {}).get('required_certifications', []) %}
+{%- if certs %}
+<p><strong>必须认证</strong>：{% for c in certs %}{{ badge(c, 'high') }}{% endfor %}</p>
+{%- endif %}
+
+{%- set mvp_v = goal.get('technical_mvp', {}).get('mvp_verdict', '') %}
+{%- if mvp_v %}
+{{ callout('MVP定位', '<p>' ~ mvp_v ~ '</p>', 'info') }}
+{%- endif %}
+
+{%- set bt = goal.get('business_targets', {}) %}
+<h3>商业目标</h3>
+<table>
+  <tr><th style="width:30%">指标</th><th>目标</th></tr>
+  <tr><td>上市时间</td><td>{{ bt.get('time_to_market', '待定') }}</td></tr>
+  <tr><td>目标成本</td><td>{{ bt.get('target_cost', '待定') }}</td></tr>
+  <tr><td>首年销量</td><td>{{ bt.get('first_year_sales_estimate', '待定') }}</td></tr>
+</table>
+
+{# ============================================================ #}
+<h2 id="s9">九、定策略：差异化制胜点</h2>
+{# ============================================================ #}
+{%- set rec = strategy.get('recommended_strategy', '') %}
+{%- set rationale = strategy.get('rationale', '') %}
+{%- if rec %}
+{{ callout('推荐策略', '<p><strong>' ~ rec ~ '</strong><p style="margin-top:8px;color:#1e40af;">' ~ rationale ~ '</p>', 'info') }}
+{%- endif %}
+
+{%- set edges = strategy.get('differentiation_edges', []) %}
+{%- if edges %}
+<h3>差异化支撑</h3>
+<ul>
+{%- for e in edges %}
+  <li>{{ e }}</li>
+{%- endfor %}
+</ul>
+{%- endif %}
+
+{%- set rejected = strategy.get('rejected_strategies', []) %}
+{%- if rejected %}
+<h3>已排除策略</h3>
+<table>
+  <tr><th>策略</th><th>排除原因</th></tr>
+{%- for r in rejected %}
+  <tr><td>{{ r.get('strategy', '') }}</td><td>{{ r.get('reason', '') }}</td></tr>
+{%- endfor %}
+</table>
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s10">十、定计划：研发路线图</h2>
+{# ============================================================ #}
+{%- set milestones = plan.get('milestones', []) %}
+{%- if milestones %}
+<h3>里程碑</h3>
+{{ timeline(milestones) }}
+{%- endif %}
+
+{%- set risks = plan.get('top_risks', []) %}
+{%- if risks %}
+<h3>Top 技术风险</h3>
+{%- for r in risks %}
+  {{ callout(r.get('risk',''), '<p><strong>影响阶段</strong>：' ~ r.get('affected_phase','') ~ '</p><p><strong>缓解措施</strong>：' ~ r.get('mitigation','') ~ '</p>', 'danger') }}
+{%- endfor %}
+{%- endif %}
+
+{%- set res = plan.get('resource_suggestions', '') %}
+{%- if res %}
+<h3>资源建议</h3>
+<p>{{ res }}</p>
+{%- endif %}
+
+{# ============================================================ #}
+<h2 id="s11">十一、附录</h2>
+{# ============================================================ #}
+
+<h3>A · 分析方法</h3>
+<p>本报告采用基于IPD DSTE体系的<strong>五看三定</strong>方法论，通过多智能体并行搜索 → 交叉验证 → 递进决策三层流水线生成。</p>
+
+<h4>分析流程</h4>
+<div class="timeline">
+  <div class="timeline-item"><div class="phase">Phase 1 · 输入解析</div><div class="detail">解析产品方向 → 技术域 / 应用域 / 约束条件</div></div>
+  <div class="timeline-item"><div class="phase">Phase 2 · 五看 <span class="period">5×并行搜索+AI分析</span></div><div class="detail">看趋势 / 看对手 / 看客户 / 看自己 / 看机会</div></div>
+  <div class="timeline-item"><div class="phase">Phase 3 · 交叉验证</div><div class="detail">去重 · 矛盾识别 · 跨模块关联 · 优先级排序</div></div>
+  <div class="timeline-item"><div class="phase">Phase 4 · 三定 <span class="period">3×递进决策</span></div><div class="detail">定目标 → 定策略 → 定计划</div></div>
+</div>
+
+<h4>搜索范围</h4>
+<table>
+  <tr><th>来源</th><th>类型</th><th>说明</th></tr>
+  <tr><td><span class="method-badge search">🔍 DuckDuckGo</span></td><td>Web Search</td><td>中英文关键词搜索，按产品方向/技术域/应用域多维度查询，结果去重</td></tr>
+  <tr><td><span class="method-badge ai">🤖 DeepSeek AI</span></td><td>LLM Analysis</td><td>DeepSeek-v4-flash / deepseek-chat 模型，对所有搜索数据进行结构化分析</td></tr>
+  <tr><td><span class="method-badge wiki">📚 Wikipedia</span></td><td>参考补充</td><td>用于技术概念验证和基本原理查证</td></tr>
+</table>
+
+<h4>分析参数</h4>
+<table>
+  <tr><td style="width:30%"><strong>产品方向</strong></td><td>{{ product_direction }}</td></tr>
+  <tr><td><strong>技术域</strong></td><td>{{ parsed.get('技术域', '—') }}</td></tr>
+  <tr><td><strong>应用域</strong></td><td>{{ parsed.get('应用域', '—') }}</td></tr>
+  <tr><td><strong>约束条件</strong></td><td>{{ parsed.get('约束条件', '未指定') }}</td></tr>
+  <tr><td><strong>搜索范围</strong></td><td>DuckDuckGo Web Search (中英文) + DeepSeek AI + Wikipedia</td></tr>
+  <tr><td><strong>分析引擎</strong></td><td>DeepSeek-v4-flash / deepseek-chat</td></tr>
+  <tr><td><strong>生成日期</strong></td><td>{{ date_str }}</td></tr>
+</table>
+
+<h3>B · 数据来源 / References</h3>
+{%- if references %}
+{{ ref_list(references) }}
+{%- else %}
+<p><em>报告生成过程中收集的参考来源将在完善数据结构后呈现。</em></p>
+{%- endif %}
+
+<h3>C · 缩写说明</h3>
+<table>
+  <tr><th style="width:20%">缩写</th><th>全称</th><th>中文含义</th></tr>
+  <tr><td><strong>TAM</strong></td><td>Total Addressable Market</td><td>总可寻址市场，产品或服务在理想情况下能达到的最大市场规模</td></tr>
+  <tr><td><strong>SAM</strong></td><td>Serviceable Available Market</td><td>可服务市场，产品/渠道能触达的市场部分</td></tr>
+  <tr><td><strong>SOM</strong></td><td>Serviceable Obtainable Market</td><td>可获得市场，短期内实际能拿下的市场份额</td></tr>
+  <tr><td><strong>CAGR</strong></td><td>Compound Annual Growth Rate</td><td>复合年增长率，衡量投资或市场在特定时期内的年均增长速度</td></tr>
+  <tr><td><strong>BLDC</strong></td><td>Brushless DC Motor</td><td>无刷直流电机，电子换向的永磁同步电机</td></tr>
+  <tr><td><strong>PMSM</strong></td><td>Permanent Magnet Synchronous Motor</td><td>永磁同步电机，高效率、高功率密度的交流电机</td></tr>
+  <tr><td><strong>PHM</strong></td><td>Prognostics and Health Management</td><td>故障预测与健康管理，设备状态监测和寿命预测技术</td></tr>
+  <tr><td><strong>MVP</strong></td><td>Minimum Viable Product</td><td>最小可行产品，满足核心功能的最简产品版本</td></tr>
+  <tr><td><strong>BOM</strong></td><td>Bill of Materials</td><td>物料清单，产品所需所有零部件的清单和成本</td></tr>
+  <tr><td><strong>ITAR</strong></td><td>International Traffic in Arms Regulations</td><td>国际武器贸易条例，美国对国防相关技术的出口管制</td></tr>
+  <tr><td><strong>ECSS</strong></td><td>European Cooperation for Space Standardization</td><td>欧洲空间标准化合作组织，制定航天领域统一标准</td></tr>
+  <tr><td><strong>GJB</strong></td><td>国军标（Guo Jun Biao）</td><td>中国军用标准，军用产品的质量和技术规范</td></tr>
+</table>
+
+<h3>D · 方法声明</h3>
+<blockquote>本报告由五看三定AI战略洞察助手 v1.0 自动生成。数据来源于 DuckDuckGo 公开网络搜索（中英文多维度查询），经 DeepSeek AI 模型进行结构化分析和推理。交叉验证环节对五看结果进行矛盾识别和优先级排序。建议在正式 Charter 评审前由人工核实关键数据点的准确性。</blockquote>
+
+<blockquote>⚠️ 本报告中的市场数据、竞争对手信息、技术参数等均基于公开网络信息，可能存在时效性和完整性问题。所有分析结论仅供战略决策参考，不构成投资建议。</blockquote>
+
+<div class="footer">
+  <p>五看三定AI战略洞察助手 v1.0 | 基于IPD DSTE 五看三定方法论 | 作者：Dr.-ING Jian WANG</p>
+  <p>报告生成于 {{ date_str }} | 数据来源：DuckDuckGo + DeepSeek AI</p>
+</div>
+
+</div>
+</body>
+</html>
