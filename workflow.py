@@ -140,7 +140,7 @@ TREND_SYSTEM = '''你是一个行业技术趋势分析师（"看趋势"）。分
 - key_trends: [{trend, confidence: "高"|"中"|"低", source_url}]
 - demand_volume_trends: [{year_or_period, volume_numeric: 数值（纯数字，无单位）, volume_description, unit: "万套"|"亿美元"等, source_note}]  — 需求总量变化趋势（至少4个时间点），用于生成折线图
 - regional_demand: [{region, demand_value: "数值", unit: "亿元或亿美元", share_pct: "百分比数字（如24%）", note}]  — 分地区需求分布
-- price_trends: {trend_description, entry_level_price: "3000", mid_range_price: "8000", high_end_price: "20000", unit: "**必须输出单位，如"美元/台"（单个飞轮），不可为空**", year_over_year_change: "**必须含%号，如-5.5%或-3.5%**", source_note}
+- price_trends: {trend_description, entry_level_price: "根据搜索结果填写数值", mid_range_price: "根据搜索结果填写数值", high_end_price: "根据搜索结果填写数值", unit: "**必须输出单位，如美元/台、万元/套等，不可为空**", year_over_year_change: "**必须含%号，如-5.5%或-3.5%**", source_note}
 - technology_roadmap: [{phase, timeline_estimate, key_technologies, maturity_forecast}]  — 技术路线图
 - market_split: {china: {outlook: "中国市场需求概述与技术发展特点", key_demand: "需求特征（含数据）", policy_drivers: "政策驱动因素"}, global: {outlook: "全球市场概述与技术趋势", key_demand: "需求特征（含数据）", policy_drivers: "政策驱动因素"}}  — 中国vs全球市场分拆分析'''
 
@@ -231,30 +231,30 @@ def build_queries(view: str, tech_domain: str, app_domain: str, direction: str) 
             f"{tech_domain} {direction} 市场规模 预测",
             f"{tech_domain} {app_domain} 政策 标准 法规",
             f"{direction} technology trend market forecast 2026",
-            f"{direction} sat reaction wheel price range comparison 2025",
+            f"{direction} price range comparison 2025",
         ],
         "competitor": [
             f"{tech_domain} {app_domain} 龙头企业 竞争格局 2025",
-            f"{direction} reaction wheel manufacturer supplier",
-            f"reaction wheel motor price cost production volume revenue manufacturer",
-            f"reaction wheel satellite company revenue market share 2025",
+            f"{direction} manufacturer supplier",
+            f"{direction} motor price cost production volume manufacturer 2025",
+            f"{direction} company revenue market share 2025",
             f"{tech_domain} {app_domain} 专利 技术路线",
         ],
         "customer": [
             f"{tech_domain} {app_domain} 痛点 挑战 瓶颈",
             f"{direction} customer pain point requirement",
             f"{tech_domain} {app_domain} 采购 招标 认证",
-            f"{direction} satellite reaction wheel demand procurement",
+            f"{direction} demand procurement 2025",
         ],
         "self": [
             f"{tech_domain} {app_domain} 技术指标 参数 对比",
-            f"{direction} reaction wheel technical specification comparison",
+            f"{direction} technical specification comparison",
         ],
         "opportunity": [
             f"{tech_domain} {app_domain} 市场 规模 TAM 预测 2025",
-            f"{direction} satellite reaction wheel market size forecast",
-            f"全球反作用飞轮 市场规模 细分 增长率",
-            f"satellite actuator market segmentation price analysis 2025",
+            f"{direction} market size forecast",
+            f"全球{tech_domain} 市场规模 细分 增长率",
+            f"{direction} market segmentation price analysis 2025",
         ],
     }
     return queries_map.get(view, [])
