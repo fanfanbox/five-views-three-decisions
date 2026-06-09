@@ -494,18 +494,20 @@ def run_pipeline(direction: str, date_str: str = "",
     print(f"📝 Phase 5: 报告生成")
     print(f"{'='*60}")
     elapsed = time.time() - start_time
+
+    # Build args expected by report_generator
+    wukan = [trend, comp, cust, self_data, opp]
+    sanding = {"goal": goal, "strategy": strategy, "plan": plan}
     md_report, html_report = generate_reports(
         product_direction=direction,
-        date_str=date_str,
-        trend=trend,
-        comp=comp,
-        cust=cust,
-        self_data=self_data,
-        opp=opp,
+        parsed=parsed,
+        wukan=wukan,
         synthesis=synthesis,
         goal=goal,
         strategy=strategy,
         plan=plan,
+        date_str=date_str,
+        output_dir=str(output_path),
     )
 
     # Write files

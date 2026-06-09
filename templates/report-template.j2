@@ -1,4 +1,4 @@
-{# ============================================================ #}
+﻿{# ============================================================ #}
 {# 五看三定战略洞察报告 — Jinja2 HTML Template               #}
 {# ============================================================ #}
 {%- macro badge(text, level='mid') -%}
@@ -341,16 +341,25 @@
 <div class="region-demand">
 <table>
   <tr><th>地区</th><th>需求量（{{ (reg_demand[0] or {}).get('unit', '') }}）</th><th>占比</th><th>备注</th></tr>
-  {%- set total_reg = reg_demand|map(attribute='value')|sum %}
+  {#- Calculate total_reg numeric sum #}
+  {%- set total_reg = namespace(val=0) %}
+  {%- set total_reg_unit = '' %}
   {%- for r in reg_demand %}
+  {%- set rv = r.get('demand_value') or r.get('value', 0) %}
+  {%- set total_reg.val = total_reg.val + (rv|numval) %}
+  {%- if r.get('unit') %}{%- set total_reg_unit = r.get('unit') %}{%- endif %}
+  {%- endfor %}
+  {%- set total_reg = total_reg.val %}
+  {%- for r in reg_demand %}
+  {%- set r_val = r.get('demand_value') or r.get('value', '') %}
   <tr>
     <td><strong>{{ r.get('region', '') }}</strong></td>
-    <td>{{ r.get('value', '') }}{{ r.get('unit', '') }}</td>
-    <td>{{ (r.get('value', 0) / total_reg * 100)|round|int if total_reg > 0 else '—' }}%</td>
+    <td>{{ r_val }}{{ r.get('unit', '') }}</td>
+    <td>{{ (r_val|numval / total_reg * 100)|round|int if total_reg > 0 else '—' }}%</td>
     <td>{{ r.get('note', '') }}</td>
   </tr>
   {%- endfor %}
-  <tr style="font-weight:700;background:#f1f5f9;"><td>合计</td><td>{{ total_reg }}{{ (reg_demand[0] or {}).get('unit', '') }}</td><td>100%</td><td>数据年份：{{ (reg_demand[0] or {}).get('year', '') }}</td></tr>
+  <tr style="font-weight:700;background:#f1f5f9;"><td>合计</td><td>{{ total_reg }}{{ total_reg_unit }}</td><td>100%</td><td>数据年份：{{ (reg_demand[0] or {}).get('year', '') }}</td></tr>
 </table>
 </div>
 {%- endif %}

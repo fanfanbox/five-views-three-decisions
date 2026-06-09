@@ -59,6 +59,20 @@ def _render_html(context: dict) -> str:
         return '；'.join(parts) if parts else ''
     env.filters["extract_parens"] = extract_parens
 
+    def numval(value):
+        """Extract numeric value from a mixed string like '2亿元' → 2.0."""
+        if value is None:
+            return 0
+        if isinstance(value, (int, float)):
+            return float(value)
+        import re
+        s = re.sub(r'[^0-9.\-]', '', str(value))
+        try:
+            return float(s) if s else 0
+        except ValueError:
+            return 0
+    env.filters["numval"] = numval
+
     template = env.get_template("report-template.j2")
     return template.render(**context)
 
