@@ -153,10 +153,8 @@ COMPETITOR_SYSTEM = '''你是一个竞争情报分析师（"看对手"）。识�
 - pricing_overview: {entry_level: "入门级价格", mid_range: "中端价格", high_end: "高端价格", unit: "美元/台或人民币/台", trend: "价格变化趋势"}
 - market_split: {china: {landscape_summary: "中国市场竞争格局特点", key_players: "主要国内玩家", localization_trend: "国产化趋势"}, global: {landscape_summary: "全球竞争格局特点", key_players: "主要国际玩家", entry_barriers: "进入壁垒"}}  — 中国vs全球市场分拆
 
-请确保覆盖以下已知主要竞争对手（至少包含搜索结果中有信息的，缺失信息用'—'而非跳过）：
-国际：Collins Aerospace、Honeywell Aerospace、Airbus Defence and Space（含Teldix）、Bradford Engineering、Astrofein、Sinclair Interplanetary（Rocket Lab）、Hyperion Technologies
-中国：航天科技集团CASC、天银机电、航天科工CASIC、沈阳微控、银河航天/微纳星空
-每个公司输出target_market（高轨/低轨/军事/科学）、price_range（含单位）、technical_params（效率、寿命、角动量、重量）、annual_production/annual_revenue（标注"未公开"或提供数据）'''
+请基于搜索结果的全面覆盖主要竞争对手，区分国际和国内玩家。
+每个公司输出target_market、price_range（含单位）、technical_params（根据产品特性填写关键参数）、annual_production/annual_revenue（标注"未公开"或提供数据）。'''
 
 CUSTOMER_SYSTEM = '''你是一个客户洞察分析师（"看客户"）。识别客户痛点和未被满足的需求，以及客户结构和采购模式。
 基于提供的搜索结果进行分析。输出必须是JSON格式，包含：
