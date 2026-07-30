@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工程机械电驱泵深度研究报告</title><style>/* 五看三定战略洞察报告 - 样式表 v2.0 */
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  max-width: 960px; margin: 0 auto; padding: 40px 24px;
+  color: #1e293b; line-height: 1.8; background: #f8fafc;
+}
+.report { background: #fff; padding: 48px 56px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.header { text-align: center; padding-bottom: 28px; margin-bottom: 32px; border-bottom: 2px solid #e2e8f0; }
+.header h1 { font-size: 26px; color: #0f172a; margin: 0 0 6px; letter-spacing: 1px; }
+.header .meta { color: #64748b; font-size: 13px; }
+.header .author { color: #2563eb; font-size: 13px; font-weight: 600; margin-top: 4px; }
+.toc { background: #f1f5f9; border-radius: 8px; padding: 12px 20px; margin-bottom: 28px; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; }
+.toc a { color: #3b82f6; text-decoration: none; }
+.toc a:hover { text-decoration: underline; }
+.toc-sep { color: #cbd5e1; }
+.metrics { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+.metric-card { flex: 1; min-width: 120px; background: linear-gradient(135deg, #1e3a5f, #2563eb); border-radius: 10px; padding: 16px 12px; color: #fff; text-align: center; }
+.metric-card .value { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.metric-card .label { font-size: 12px; opacity: .8; margin-top: 4px; }
+.metric-card.green { background: linear-gradient(135deg, #065f46, #059669); }
+.metric-card.orange { background: linear-gradient(135deg, #92400e, #d97706); }
+.metric-card.purple { background: linear-gradient(135deg, #4c1d95, #7c3aed); }
+.metric-card.teal { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+h2 { font-size: 20px; color: #0f172a; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin: 36px 0 16px; }
+h3 { font-size: 16px; color: #2563eb; margin: 24px 0 12px; }
+h4 { font-size: 14px; color: #475569; margin: 16px 0 8px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+th { background: #1e293b; color: #fff; padding: 10px 12px; text-align: left; font-weight: 600; }
+td { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; }
+tr:nth-child(even) td { background: #f8fafc; }
+tr:hover td { background: #eff6ff; }
+.callout { margin: 16px 0; padding: 14px 18px; border-radius: 8px; border-left: 4px solid; font-size: 13px; }
+.callout .title { font-weight: 700; margin-bottom: 6px; }
+.callout.info { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+.callout.warning { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.callout.danger { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 0 2px; }
+.badge.high { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+.badge.mid { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; }
+.badge.low { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+.bar-chart { margin: 12px 0 20px; }
+.bar-row { display: flex; align-items: center; margin: 5px 0; font-size: 13px; }
+.bar-label { width: 120px; flex-shrink: 0; color: #475569; padding-right: 8px; }
+.bar-track { flex: 1; background: #e2e8f0; border-radius: 6px; height: 22px; position: relative; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; color: #fff; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.bar-value { min-width: 50px; text-align: right; padding-left: 8px; color: #1e293b; font-weight: 600; font-size: 12px; }
+.maturity-meter { display: flex; gap: 4px; margin: 12px 0; }
+.maturity-seg { height: 34px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 4px; transition: all .3s; }
+.maturity-seg.active { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.comp-grid { display: flex; gap: 12px; margin: 12px 0 20px; flex-wrap: wrap; }
+.comp-card { flex: 1; min-width: 160px; background: #f8fafc; border-radius: 8px; padding: 12px; border: 1px solid #e2e8f0; }
+.comp-card .name { font-weight: 700; font-size: 14px; color: #0f172a; }
+.comp-card .tag { font-size: 11px; color: #fff; background: #2563eb; border-radius: 4px; padding: 1px 6px; display: inline-block; margin-left: 4px; vertical-align: middle; }
+.comp-card .tag.startup { background: #059669; }
+.comp-card .tag.cross { background: #d97706; }
+.comp-card .detail { font-size: 12px; color: #64748b; margin-top: 4px; line-height: 1.5; }
+.timeline { position: relative; margin: 16px 0 20px; padding: 0 0 0 24px; }
+.timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 3px; background: #e2e8f0; border-radius: 2px; }
+.timeline-item { position: relative; margin-bottom: 20px; padding-left: 16px; }
+.timeline-item::before { content: ''; position: absolute; left: -20px; top: 5px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid #2563eb; }
+.timeline-item .phase { font-weight: 700; color: #0f172a; font-size: 14px; }
+.timeline-item .period { color: #64748b; font-size: 12px; font-weight: 400; margin-left: 6px; }
+.timeline-item .detail { font-size: 13px; color: #475569; margin-top: 2px; }
+.ref-list { margin: 12px 0; }
+.ref-item { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; align-items: flex-start; }
+.ref-item .source { color: #3b82f6; text-decoration: none; word-break: break-all; }
+.ref-item .tag-domain { background: #e0e7ff; color: #4338ca; padding: 1px 6px; border-radius: 4px; font-size: 10px; flex-shrink: 0; }
+.ref-item .cite-text { flex: 1; }
+blockquote { margin: 12px 0; padding: 10px 16px; background: #f1f5f9; border-left: 3px solid #94a3b8; border-radius: 0 6px 6px 0; color: #475569; font-style: italic; font-size: 13px; }
+.footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center; }
+.method-badge { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.method-badge.search { background: #dbeafe; color: #1d4ed8; }
+.method-badge.ai { background: #f3e8ff; color: #7c3aed; }
+.method-badge.wiki { background: #d1fae5; color: #047857; }
+.flex-trend { display: flex; gap: 20px; margin: 12px 0 20px; }
+.flex-trend .flex-text { flex: 3; min-width: 0; }
+.flex-trend .flex-text p { margin: 4px 0; font-size: 13px; line-height: 1.7; color: #1e293b; }
+.flex-trend .flex-text ul { margin: 4px 0; font-size: 13px; color: #475569; padding-left: 18px; }
+.flex-trend .flex-text ul li { margin: 3px 0; }
+.flex-trend .flex-chart { flex: 1.2; min-width: 0; }
+.flex-trend .flex-chart .bar-chart { margin: 0; }
+.flex-trend .flex-chart .bar-label { width: 80px; font-size: 11px; }
+.flex-trend .flex-chart .bar-track { height: 16px; }
+.flex-trend .flex-chart .bar-fill { font-size: 10px; height: 16px; }
+.flex-trend .flex-chart .bar-value { font-size: 10px; min-width: 30px; }
+.flex-pain { display: flex; gap: 16px; margin: 12px 0; align-items: flex-start; }
+.flex-pain .flex-text { flex: 2; min-width: 0; }
+.flex-pain .flex-chart { flex: 1; min-width: 0; max-width: 33%; }
+.flex-pain .flex-chart .bar-chart { margin: 0; }
+.flex-pain .flex-chart .bar-label { width: 70px; font-size: 11px; }
+.flex-pain .flex-chart .bar-track { height: 14px; }
+.flex-pain .flex-chart .bar-fill { font-size: 9px; height: 14px; }
+.flex-pain .flex-chart .bar-value { font-size: 10px; min-width: 24px; }
+.region-demand { margin: 12px 0 20px; }
+.region-demand table { font-size: 12px; }
+.region-demand td { padding: 6px 10px; }
+a.metric-link { text-decoration: none; color: inherit; display: block; flex: 1; min-width: 120px; }
+a.metric-link:hover .metric-card { filter: brightness(1.15); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+a.metric-link .metric-card { transition: all .2s ease; }
+.line-chart { margin: 16px 0; background: #fff; border-radius: 8px; padding: 12px; border: 1px solid #e2e8f0; }
+.line-chart svg { display: block; }
+@media print {
+  body { background: #fff; padding: 0; }
+  .report { box-shadow: none; padding: 24px; }
+  .toc { break-after: avoid; }
+  h2 { break-before: auto; }
+}</style>
+</head><body><div class="report">
+
+<div class="header">
+<h1>工程机械电驱泵深度研究报告</h1>
+<div class="meta">生成日期：2026-07-01 | 基于 deep-research 多源交叉验证（100 agents, 790 工具调用, 334 万 tokens）</div>
+<div class="author">作者：Dr.-ING Jian WANG</div>
+</div>
+
+<div class="toc">
+<a href="#s1">技术路线总览</a><span class="toc-sep">|</span><a href="#s2">供应商与竞争格局</a><span class="toc-sep">|</span><a href="#s3">中国市场应用现状</a><span class="toc-sep">|</span><a href="#s4">应用场景与适配矩阵</a><span class="toc-sep">|</span><a href="#s5">市场前景与关键趋势</a><span class="toc-sep">|</span><a href="#s6">总结</a><span class="toc-sep">|</span><a href="#s7">研究方法说明</a>
+</div>
+
+<div class="metrics">
+<div class="metric-card"><div class="value">3</div><div class="label">技术路线</div></div>
+<div class="metric-card green"><div class="value">11</div><div class="label">验证确认声明</div></div>
+<div class="metric-card orange"><div class="value">73x</div><div class="label">装载机vs挖掘机电动化差距</div></div>
+<div class="metric-card teal"><div class="value">5</div><div class="label">国际Tier-1供应商</div></div>
+</div>
+
+<h2 id="s1">一、技术路线总览</h2>
+<p>工程机械电驱泵当前主要有三条技术路线：</p>
+
+<h3>1.1 高压集成电液系统（700V 平台）</h3>
+<p><strong>代表：Bosch Rexroth eLION 平台</strong> | 来源：<a href="https://www.boschrexroth.com/en/ch/company/press/expansion-elion-portfolio-29504.html">Bosch Rexroth Press</a> <span class="badge low">3-0 ✅</span></p>
+
+<table>
+<tr><th>参数</th><th>指标</th></tr>
+<tr><td>电压架构</td><td><strong>700 V DC</strong></td></tr>
+<tr><td>额定功率范围</td><td><strong>20–200 kW</strong>（5 种框号）</td></tr>
+<tr><td>峰值功率</td><td>最高 <strong>400 kW</strong></td></tr>
+<tr><td>功率密度</td><td>比上一代提升 <strong>50%</strong></td></tr>
+<tr><td>适配泵型</td><td>轴向柱塞泵（axial piston pump）</td></tr>
+<tr><td>目标机型</td><td>中大型挖掘机、装载机、推土机</td></tr>
+</table>
+
+<p><strong>低压补充线（96V 平台）：</strong></p>
+<ul>
+<li>EML1 电机 + EDL1 逆变器组合，峰值 <strong>80 kW</strong></li>
+<li>目标：紧凑型轮式装载机、伸缩臂叉车（telehandler）</li>
+</ul>
+
+<h3>1.2 低压直驱电泵系统（48V 平台）</h3>
+<p><strong>代表：Danfoss Editron EM-PMI180</strong> | 来源：<a href="https://www.danfoss.com/en/about-danfoss/news/dps/new-danfoss-editron-em-pmi180-low-voltage-electric-motor-efficiently-powers-hydraulic-functions-on-compact-electric-machinery/">Danfoss Press</a> <span class="badge low">3-0 ✅</span></p>
+
+<table>
+<tr><th>参数</th><th>指标</th></tr>
+<tr><td>电压</td><td><strong>48 V DC</strong></td></tr>
+<tr><td>电机类型</td><td><strong>SRPM</strong>（同步磁阻辅助永磁）</td></tr>
+<tr><td>额定功率</td><td><strong>7 kW</strong></td></tr>
+<tr><td>额定转速</td><td><strong>3,000 rpm</strong>（最高 4,000 rpm）</td></tr>
+<tr><td>额定/峰值扭矩</td><td><strong>22.5 Nm / 90 Nm</strong></td></tr>
+<tr><td>适配泵型</td><td>齿轮泵（标准接口，最大 <strong>16 cc @ 240 bar</strong>）</td></tr>
+<tr><td>目标机型</td><td>高空作业车（boom/scissor lift）、紧凑型装载机/挖掘机</td></tr>
+</table>
+
+<blockquote>Danfoss EM-PMI180 专为替代传统 AC 感应电机设计，可直接驱动液压齿轮泵，是紧凑型电动工程机械的标准化电驱泵方案。</blockquote>
+
+<h3>1.3 直驱液压（DDH — Direct Driven Hydraulics）— 学术前沿</h3>
+<p>来自 <strong>RWTH Aachen</strong> 的研究（此次验证中部分数据被驳回，来源：<a href="https://publications.rwth-aachen.de/record/723849/files/723849.pdf">RWTH Publications</a>）：</p>
+<ul>
+<li>思路：取消传统集中式液压系统，每个执行机构由独立电驱泵直驱</li>
+<li>宣称整机循环效率可达 <strong>38-48%</strong>（vs 传统 10-20%），但因数据来源于学术论文，未能通过 3 票验证</li>
+<li><strong>核心价值</strong>：揭示"液压系统仍是电驱挖掘机效率瓶颈"这一关键洞察</li>
+</ul>
+
+<h2 id="s2">二、主要供应商与竞争格局</h2>
+
+<h3>2.1 国际 Tier-1</h3>
+<table>
+<tr><th>供应商</th><th>核心产品</th><th>电压/功率</th><th>特点</th></tr>
+<tr><td><strong>Bosch Rexroth</strong></td><td>eLION EMP1/EML1</td><td>700V / 20-200 kW</td><td>市场领导者，电机+液压泵+逆变器+软件全栈集成</td></tr>
+<tr><td><strong>Danfoss Editron</strong></td><td>EM-PMI180</td><td>48V / 7 kW</td><td>紧凑型设备专用，SRPM 高效电机</td></tr>
+<tr><td><strong>Parker Hannifin</strong></td><td>全球电液元件</td><td>—</td><td>电液泵/阀/马达全产品线</td></tr>
+<tr><td><strong>Kawasaki</strong></td><td>精密液压</td><td>—</td><td>液压+电液集成，挖掘机液压系统专长</td></tr>
+<tr><td><strong>POCLAIN</strong></td><td>液压马达/泵</td><td>—</td><td>径向柱塞马达技术</td></tr>
+</table>
+
+<h3>2.2 国内厂商</h3>
+<div class="callout warning">
+<div class="title">⚠ 恒立液压验证状态</div>
+<p style="margin:4px 0;"><strong>恒立液压（Hengli）</strong> 的 V32HL56 电驱泵方案（来源 hengli-tec.cn）在此次研究中被 0-3 票驳回——3 名验证者一致判定该来源不可靠。但这不代表恒立没有相关产品，仅说明该特定网页无法支撑参数声明。建议直接查阅恒立官网最新产品手册获取 datasheet。</p>
+</div>
+
+<h2 id="s3">三、中国市场应用现状</h2>
+
+<h3>3.1 装载机电动化远超挖掘机</h3>
+<div class="callout info">
+<div class="title">📊 关键数据</div>
+<p style="margin:4px 0;">来源：<a href="https://www.ccm-1.com/news/8287.html">CCM-1 工程机械</a> <span class="badge low">3-0 ✅</span></p>
+</div>
+
+<p><strong>2026 年 1-2 月中国销量对比：</strong></p>
+<table>
+<tr><th>机型</th><th>电动销量</th></tr>
+<tr><td>电动装载机</td><td><strong>5,132 台</strong></td></tr>
+<tr><td>电动挖掘机</td><td><strong>70 台</strong></td></tr>
+</table>
+
+<p><strong>两者相差 73 倍。</strong> 装载机工况相对固定（V 型装载循环），电驱匹配度高；挖掘机工况多变、载荷波动大，电驱+液压系统匹配难度显著更高。</p>
+
+<h3>3.2 挖掘机电动化的核心瓶颈：液压系统</h3>
+<div class="callout info">
+<div class="title">📊 关键数据</div>
+<p style="margin:4px 0;">来源：<a href="https://www.ccm-1.com/news/8287.html">CCM-1 工程机械</a> <span class="badge low">2-1 ✅</span></p>
+</div>
+<ul>
+<li>电动机本体效率高达 <strong>90%</strong>，但由于仍依赖传统液压系统（泵+阀+管路节流损失）</li>
+<li>电动挖掘机整机效率<strong>仅有约 30%</strong>，相比柴油挖掘机（&lt;15%）提升有限</li>
+<li><strong>这正是电驱泵技术的关键价值所在</strong> —— 用高效电驱泵取代传统发动机-液压泵传动链，减少中间损耗，同时为智能化液压控制（负载敏感、流量匹配）提供基础</li>
+</ul>
+
+<h2 id="s4">四、应用场景与适配矩阵</h2>
+<table>
+<tr><th>机型</th><th>电动化阶段</th><th>推荐电驱泵方案</th><th>功率等级</th></tr>
+<tr><td><strong>高空作业车</strong>（boom/scissor lift）</td><td><span class="badge low">较成熟</span></td><td>Danfoss EM-PMI180 48V 直驱</td><td>7 kW</td></tr>
+<tr><td><strong>紧凑型装载机</strong></td><td><span class="badge low">较快推进</span></td><td>Danfoss 48V / Bosch 96V</td><td>7-80 kW</td></tr>
+<tr><td><strong>轮式装载机</strong></td><td><span class="badge low">中国市场爆发</span></td><td>Bosch eLION 96V / 700V</td><td>80-200 kW</td></tr>
+<tr><td><strong>伸缩臂叉车</strong></td><td><span class="badge low">增长中</span></td><td>Bosch eLION 96V</td><td>80 kW</td></tr>
+<tr><td><strong>挖掘机（紧凑型 &lt;6t）</strong></td><td><span class="badge mid">起步</span></td><td>Danfoss 48V</td><td>7 kW</td></tr>
+<tr><td><strong>挖掘机（中型 20t）</strong></td><td><span class="badge high">瓶颈期</span></td><td>Bosch eLION 700V + 高效液压</td><td>100-200 kW</td></tr>
+<tr><td><strong>起重机</strong></td><td><span class="badge high">早期</span></td><td>待验证</td><td>—</td></tr>
+<tr><td><strong>推土机</strong></td><td><span class="badge high">早期</span></td><td>Bosch eLION 700V</td><td>200+ kW</td></tr>
+</table>
+
+<h2 id="s5">五、市场前景与关键趋势</h2>
+
+<div class="comp-grid">
+<div class="comp-card">
+<div class="name">排放法规驱动</div>
+<div class="detail">非道路国四（GB 20891）已全面实施，城市工地（北京、深圳等）对零排放工程机械有明确政策倾斜，电驱泵是电动化的核心使能部件。</div>
+</div>
+<div class="comp-card">
+<div class="name">市场报告覆盖空白 <span class="tag startup">2-1 ✅</span></div>
+<div class="detail">目前市面上的《电动工程机械市场报告》（如 ResearchAndMarkets）明确不覆盖电驱泵、电液系统和起重机/高空作业平台，说明<strong>这是一个细分但高价值的研究空白</strong>。</div>
+</div>
+</div>
+
+<h3>技术收敛方向</h3>
+<table>
+<tr><th>方向</th><th>说明</th></tr>
+<tr><td><strong>高压化</strong></td><td>48V → 96V → 700V，匹配从小型到大型的完整机型谱</td></tr>
+<tr><td><strong>集成化</strong></td><td>电机-泵-逆变器-软件一体化（Bosch eLION 模式）</td></tr>
+<tr><td><strong>架构重构</strong></td><td>从"电动机替代发动机"走向"电驱泵重构液压架构"（DDH 方向）</td></tr>
+<tr><td><strong>智能化</strong></td><td>电驱泵天然支持转速/扭矩精确控制，适配负载敏感和数字液压</td></tr>
+</table>
+
+<div class="callout warning">
+<div class="title">⚠ 中国市场特殊性</div>
+<p style="margin:4px 0;">装载机电动化已率先爆发（月销 2,500+ 台），电驱泵是装载机工作液压系统的核心需求；挖掘机仍在等待电驱泵+高效液压的系统级突破。</p>
+</div>
+
+<h2 id="s6">六、总结</h2>
+<table>
+<tr><th>维度</th><th>结论</th></tr>
+<tr><td><strong>技术成熟度</strong></td><td>高压（700V）和低压（48V/96V）两条路线均有量产产品，Bosch/Danfoss 已就位</td></tr>
+<tr><td><strong>市场阶段</strong></td><td>装载机/高空作业车已起量，挖掘机仍在突破液压瓶颈</td></tr>
+<tr><td><strong>核心矛盾</strong></td><td>电机效率 90% vs 整机效率 30% → 电驱泵+高效液压是破局关键</td></tr>
+<tr><td><strong>中国格局</strong></td><td>装机量领先（装载机），但核心电驱泵部件仍以国际 Tier-1 为主</td></tr>
+<tr><td><strong>研究空白</strong></td><td>电驱泵作为独立细分市场尚无权威报告覆盖</td></tr>
+</table>
+
+<h2 id="s7">附录：研究方法说明</h2>
+<table>
+<tr><th>环节</th><th>详情</th></tr>
+<tr><td><strong>方法</strong></td><td>5 路并行搜索 → 18 个源抓取 → 66 条声明提取 → 3 票对抗验证（每条声明 3 名独立 agent 验证）</td></tr>
+<tr><td><strong>验证规则</strong></td><td>需 ≥2/3 确认即为"确认"；≥2/3 驳回即为"驳回"</td></tr>
+<tr><td><strong>验证结果</strong></td><td>11 条确认 | 11 条驳回 | 3 条未完成验证</td></tr>
+<tr><td><strong>本次局限</strong></td><td>Synthesis 步骤因 API 余额不足失败，报告由人工综合；部分验证 agent 同样因余额不足无法完成（3 条声明未验证）</td></tr>
+<tr><td><strong>主要数据源</strong></td><td>Bosch Rexroth 官方新闻稿、Danfoss 官方新闻稿、ChargedEVs 行业媒体、CCM-1 工程机械网、RWTH Aachen 学术论文、ResearchAndMarkets 市场报告</td></tr>
+</table>
+
+<div class="footer">
+<p>© 2026 Dr.-ING Jian WANG | 工程机械电驱泵深度研究报告 | 基于 deep-research 多源交叉验证方法</p>
+</div>
+
+</div></body>
+</html>

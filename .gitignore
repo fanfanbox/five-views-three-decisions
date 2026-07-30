@@ -1,18 +1,24 @@
-# Byte-compiled / cached files
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
 *$py.class
-
-# Environment
-.env
-
-# Output reports
-output/
-
-# OS files
-.DS_Store
-Thumbs.db
 
 # IDE
 .vscode/
 .idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.venv/
+venv/
+
+# Output reports
+output/
+
+# Logs
+*.log
