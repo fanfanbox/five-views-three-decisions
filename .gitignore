@@ -20,6 +20,9 @@ venv/
 # Output reports
 output/
 
+# Allow .claude skill files (overrides global gitignore)
+!.claude/
+
 # Logs
 *.log
 EPF_Methalox_Rocket_Blueprint.pdf
